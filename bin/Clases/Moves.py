@@ -125,3 +125,5 @@ class Movements():
         for move in self.__tower():
             if __enemy_in_line(move) in ['t', 'q']:
                 yield move
+
+dsaasd
