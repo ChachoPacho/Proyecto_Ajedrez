@@ -1,11 +1,11 @@
-from Game import gameRead
-
+from Clases.game import Game
 
 class Movements():
     def __init__(self, pos):
+        self.game = Game()
         self.row, self.col = pos
-        self.board = gameRead().board
-        self.board_color = gameRead().color[0]
+        self.board = self.game.board
+        self.board_color = self.game.color[0]
         self.piece = self.board[self.row][self.col]     #   Two letters: [0]:color, [1]:piece
 
     def __valid_pawn(self):

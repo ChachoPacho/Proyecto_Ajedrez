@@ -1,4 +1,4 @@
-from Moves import Movements
+from moves import Movements
 
 for i in range(8):
     for y in range(8):

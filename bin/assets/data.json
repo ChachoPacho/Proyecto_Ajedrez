@@ -1,9 +1,9 @@
 {
     "element":{
-        "dir": "elements/",
+        "dir": "src/",
         "ext": ".png",
         "pieces": ["bb", "bh", "bk", "bp", "bq", "bt", "wb", "wh", "wk", "wp", "wq", "wt"],
-        "special": ["select", "blank"]
+        "special": ["select", "blank", "attack"]
     },
     "board": {
         "color": {
@@ -11,4 +11,5 @@
             "standard2": ["#D76849", "#632716"],
             "shadow": ["#845F54", "#77483B"]
         }
+    }
 }

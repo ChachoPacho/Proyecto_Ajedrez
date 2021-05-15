@@ -1,9 +1,10 @@
-import pickle
-from Game import Game
 
-Game('white')
+import sys
 
-with open('bin/game', 'rb') as cache:
-    xd = pickle.load(cache)
+sys.path.append("..")
+from Clases.game import Game
+from moves import Movements
 
-print(xd.turn)
+xd = Game()
+xd.start('white')
+print(xd.board)
