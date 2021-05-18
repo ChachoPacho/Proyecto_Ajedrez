@@ -4,13 +4,14 @@ import sys
 
 sys.path.append("..")
 from Clases.game import Game
-from Clases.moves import Movements
+from Clases.moves import Movements, Check
 from tools import Data, Images, Images_Data
 game = Game()
 game.start('white')
+
+Check().restart()
 images = Images()
 images_data = Images_Data()
-data = Data().board
 
 
 class Board:
@@ -54,7 +55,7 @@ class Board:
 
 
     def _set_color(self, style):
-        self.board_color = data['color'][style]
+        self.board_color = Data().board['color'][style]
         if game.color == 'black':
             self.board_color.reverse()
 
@@ -71,41 +72,47 @@ class Board:
             return
 
         cell = self.cell_size / 2
+        widget = f"Y{y}X{x}"
+        movements = Movements([y, x])
 
         if [y, x] not in self.cell_move:
-            self.current_piece = "Y" + str(y) + "X" + str(x)
-            movements = Movements([y, x])
-        
-            for piece in list(movements.moves_list)[0]:
-                top, right, bottom, left = self._positions(piece[0], piece[1])
+            self.current_piece = widget
+            for list_pieces in list(movements.moves_list):
+                for piece in list_pieces:
+                    top, right, bottom, left = self._positions(piece[0], piece[1])
 
-                try:
-                    images_data.select(f"Y{piece[0]}X{piece[1]}")
-                    self.board.create_image(right - cell, bottom - cell, image=images.special['attack'], anchor=CENTER, tag='cell_move')
-                    self.cell_attack.append(piece)
+                    try:
+                        images_data.select(f"Y{piece[0]}X{piece[1]}")
+                        self.board.create_image(right - cell, bottom - cell, image=images.special['attack'], anchor=CENTER, tag='cell_move')
+                        self.cell_attack.append(piece)
 
-                except ValueError:
-                    self.board.create_image(right - cell, bottom - cell, image=images.special['select'], anchor=CENTER, tag='cell_move')
+                    except ValueError:
+                        self.board.create_image(right - cell, bottom - cell, image=images.special['select'], anchor=CENTER, tag='cell_move')
 
-                finally:
-                    self.cell_move.append(piece)
+                    finally:
+                        self.cell_move.append(piece)
 
             self.board.lift('piece')
 
-        else:  
+        else:
+            test = Game(mode = 'test')
+            #print(test.board)
             r = int(self.current_piece[1])
             c = int(self.current_piece[3])
-            self.board.moveto(images_data.select(self.current_piece), (self.cell_size) * x, (self.cell_size) * y)
-            game.update(
-                {
-                'r': r,
-                'c': c
-                },
-                {
-                'r': y,
-                'c': x
-                }, None, False)
-            images_data.update(f"Y{r}X{c}", f"Y{y}X{x}")
+            I = { 'r': r, 'c': c }
+            F = { 'r': y, 'c': x }
+            test.update(I, F, False)
+            #print(Check().state())
+            if Check().state()[game.turn[0]] == []:
+                if [y, x] in self.cell_attack:
+                    self.board.delete(images_data.select(widget))
+                    images_data.delete(widget)
+                    
+                game.update(I, F, False)
+                self.board.moveto(images_data.select(self.current_piece), (self.cell_size) * x, (self.cell_size) * y)
+
+                images_data.update(f"Y{r}X{c}", widget)
+                
             self.cell_move.clear()
             self.cell_attack.clear()
 
