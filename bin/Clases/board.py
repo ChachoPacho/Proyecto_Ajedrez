@@ -3,27 +3,32 @@ import os
 import shutil
 
 
+columns = ['A','B','C','D','E','F','G','H']
+board_color = {
+                    "w": "bt,bh,bb,bq,bk,bb,bh,bt,/,8,bp,/,0,8,wp,/,wt,wh,wb,wq,wk,wb,wh,wt,/",
+                    "b": "wt,wh,wb,wq,wk,wb,wh,wt,/,8,wp,/,0,8,bp,/,bt,bh,bb,bq,bk,bb,bh,bt,/"
+                }
+cwd = os.path.dirname(__file__) + '/bin/'
+
+
 class Board():
     def __init__(self, mode = 'game'):
         try:
-            with open(cwd + '/bin/' + mode + 'board', 'rb') as rfile: data = pickle.load(rfile)
-
-        except: 
-            shutil.copyfile(cwd + '/bin/gameboard', cwd + '/bin/' + mode + 'board')
-            with open(cwd + '/bin/' + mode, 'rb') as rfile: data = pickle.load(rfile)
-
-        finally: 
+            with open(cwd + 'gameboard', 'rb') as rfile: data = pickle.load(rfile)
             for name in data.__dict__: self.__setattr__(name, data.__dict__[name])
-            self.__setattr__('mode', mode)
+
+        except: ''
+
+        finally: self.__setattr__('mode', mode)   
 
 
     def __setattr__(self, name, value):
         self.__dict__[name] = value
-        with open(cwd + '/bin/' + self.mode + 'board', 'wb') as wfile: pickle.dump(self, wfile)
 
-    
-    def end(self):
-        os.remove(cwd + '/bin/' + self.mode + 'board')
+
+    def __save(self):
+        if self.mode == 'game':
+            with open(cwd + self.mode + 'board', 'wb') as wfile: pickle.dump(self, wfile)
 
 
     def start(self, color):
@@ -31,7 +36,7 @@ class Board():
         board = []
         line = []
         for n in range(len(str_board)):
-            if str_board[n] == 'wp' or str_board[n] == 'bp': continue
+            if str_board[n] in ['wp', 'bp']: continue
 
             elif str_board[n] == '/':
                 board += [line]
@@ -47,8 +52,9 @@ class Board():
         self.board = board
         self.color = color
         c = ['b', 'w']
-        if color == 'black': c.reverse()
+        if color == 'b': c.reverse()
         self.kings = {c[0]: [0, 4], c[1]: [7, 4]}
+        self.__save()
 
 
     def update(self, I, F):
@@ -57,3 +63,4 @@ class Board():
 
         self.board[F['r']][F['c']] = self.board[I['r']][I['c']]
         self.board[I['r']][I['c']] = '0'
+        self.__save()

@@ -10,8 +10,25 @@ class Window:
 
     def __init__(self, window_name):
         self.window.title(window_name)
+        self.font = ('Helvetica', 15)
+        self._menu()
         self._prepare_window()
         self._prepare_frame()
+
+    def donothing(self):
+        filewin = Toplevel(self.window)
+        button = Button(filewin, text="Do nothing button")
+        button.pack()
+
+
+    def _menu(self):
+        menu = Menu(self.window, font= self.font)
+        menu.add_command(label="New", command=self.donothing)
+        menu.add_command(label="Open", command=self.donothing)
+        menu.add_command(label="Save", command=self.donothing)
+        menu.add_command(label="Save as...", command=self.donothing)
+        menu.add_command(label="Close", command=self.donothing)
+        self.window.config(menu = menu)
 
 
     def _prepare_window(self):

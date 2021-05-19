@@ -4,12 +4,11 @@ import sys
 
 sys.path.append("..")
 from Clases.game import Game
-from Clases.moves import Movements, Check
-from tools import Data, Images, Images_Data
+from Clases.moves import Movements
+from assets.tools import Data, Images, Images_Data
 game = Game()
-game.start('white')
+game.start('w')
 
-Check().restart()
 images = Images()
 images_data = Images_Data()
 
@@ -34,7 +33,7 @@ class Board:
         self.current_piece = None
 
         #   Board chat: what happens in the board will be here
-        self.board_chat = Text(game_zone, borderwidth=0, state='disabled', font=('Helvetica', 15))
+        self.board_chat = Text(game_zone, borderwidth=0, state='disabled', font=Window.font)
         self.board_chat['height'] = Window.main_frame['width'] - board_size
         self.board_chat['height'] = board_size
         self.board_chat.grid(row=0, column=1, sticky=NE)
@@ -56,7 +55,7 @@ class Board:
 
     def _set_color(self, style):
         self.board_color = Data().board['color'][style]
-        if game.color == 'black':
+        if game.board_data.color == 'b':
             self.board_color.reverse()
 
 
@@ -68,12 +67,12 @@ class Board:
 
     def __select_piece(self, x, y):
         self.board.delete('cell_move')
-        if [y, x] not in self.cell_move and game.board[y][x][0] != game.turn[0]:
+        if [y, x] not in self.cell_move and game.board_data.board[y][x][0] != game.turn[0]:
             return
 
         cell = self.cell_size / 2
         widget = f"Y{y}X{x}"
-        movements = Movements([y, x])
+        movements = Movements([y, x], game.board_data)
 
         if [y, x] not in self.cell_move:
             self.current_piece = widget
@@ -95,22 +94,16 @@ class Board:
             self.board.lift('piece')
 
         else:
-            test = Game(mode = 'test')
-            #print(test.board)
             r = int(self.current_piece[1])
             c = int(self.current_piece[3])
             I = { 'r': r, 'c': c }
             F = { 'r': y, 'c': x }
-            test.update(I, F, False)
-            #print(Check().state())
-            if Check().state()[game.turn[0]] == []:
+            if game.update(I, F):
                 if [y, x] in self.cell_attack:
                     self.board.delete(images_data.select(widget))
                     images_data.delete(widget)
                     
-                game.update(I, F, False)
                 self.board.moveto(images_data.select(self.current_piece), (self.cell_size) * x, (self.cell_size) * y)
-
                 images_data.update(f"Y{r}X{c}", widget)
                 
             self.cell_move.clear()
@@ -135,9 +128,9 @@ class Board:
                 cell = self.cell_size / 2
 
                 self.board.create_rectangle(left, top, right, bottom, fill=color, tag='board')
-                if game.board[rows][columns] != '0': 
+                if game.board_data.board[rows][columns] != '0': 
                     pos = f'Y{rows}X{columns}'
-                    self.board.create_image(right - cell, bottom - cell, image=images.pieces[game.board[rows][columns]], anchor=CENTER, tag=[pos, 'piece'])
+                    self.board.create_image(right - cell, bottom - cell, image=images.pieces[game.board_data.board[rows][columns]], anchor=CENTER, tag=[pos, 'piece'])
                     images_data.append(pos)
         
         self.board.lift('piece')
@@ -177,10 +170,10 @@ class Board:
         self.__select_piece(x, y)
 
 
-    def _cell_resize(self, event):
-        widget = event.widget
-        widget['width'] = widget['height'] = self.cell_size
-        pos = int(self.cell_size / 2)
-        widget.create_image(pos, pos, image=ListIMGResized['bb'], anchor=CENTER)
+    # def _cell_resize(self, event):
+    #     widget = event.widget
+    #     widget['width'] = widget['height'] = self.cell_size
+    #     pos = int(self.cell_size / 2)
+    #     widget.create_image(pos, pos, image=ListIMGResized['bb'], anchor=CENTER)
 
     #   Instruction block end

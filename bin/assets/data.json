@@ -1,9 +1,15 @@
 {
     "element":{
-        "dir": "src/",
+        "dir": "src/pieces/",
         "ext": ".png",
         "pieces": ["bb", "bh", "bk", "bp", "bq", "bt", "wb", "wh", "wk", "wp", "wq", "wt"],
-        "special": ["select", "blank", "attack"]
+        "special": ["select", "blank", "attack"],
+        "src_dir": {
+            "backgrounds": "src/backgrounds/"
+        },
+        "src_ext": {
+            "backgrounds": ".png"
+        }
     },
     "board": {
         "color": {
