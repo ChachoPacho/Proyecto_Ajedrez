@@ -1,0 +1,14 @@
+{
+    "element":{
+        "pieces": ["bb", "bh", "bk", "bp", "bq", "bt", "wb", "wh", "wk", "wp", "wq", "wt"],
+        "specials": ["select", "blank", "attack"],
+        "backgrounds": ["chessboard"]
+    },
+    "board": {
+        "color": {
+            "standard": ["#FFFFFF", "#000000"],
+            "standard2": ["#D76849", "#632716"],
+            "shadow": ["#845F54", "#77483B"]
+        }
+    }
+}
