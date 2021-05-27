@@ -6,7 +6,7 @@ columns = ['A','B','C','D','E','F','G','H']
 board_color = {
                     "w": "bt,bh,bb,bq,bk,bb,bh,bt,/,8,bp,/,0,8,wp,/,wt,wh,wb,wq,wk,wb,wh,wt,/",
                     "b": "wt,wh,wb,wq,wk,wb,wh,wt,/,8,wp,/,0,8,bp,/,bt,bh,bb,bq,bk,bb,bh,bt,/",
-                    "None": "8,0,8,0,8,0,8,0,8,0,8,0,8,0,8,0"
+                    "None": "0,0,0,0,0,0,0,0"
                 }
 
 

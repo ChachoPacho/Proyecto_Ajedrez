@@ -3,6 +3,7 @@ from sys import flags
 from tkinter import *    
 from tkinter import ttk
 from chess.clases.config import Config
+from chess.assets.board import Board
 
 
 #   Creates the window where the interface will be
@@ -10,11 +11,12 @@ class Window:
     window = Tk()
     window.columnconfigure(0, weight=1)
     window.rowconfigure(0, weight=1)
+    window.resizable(0,0)
 
     def __init__(self, window_name):
         self.font = ('Helvetica', 15)
-        self.width = self.window.winfo_screenwidth()
-        self.height = self.window.winfo_screenheight()
+        self.width = 740 # self.window.winfo_screenwidth()
+        self.height = 740 # self.window.winfo_screenheight()
 
         self.window.title(window_name)
         self.window.geometry(f'{self.width}x{self.height}')
@@ -28,7 +30,7 @@ class Window:
         menu.add_command(label="Nueva Partida", command=self.__new_game)
         menu.add_command(label="Cargar Partida", command=self.__load_game)
         menu.add_command(label="Guardar", command=self.__save_game)
-        menu.add_command(label="Ayuda", command=self.__help)
+        #menu.add_command(label="Ayuda", command=self.__help)
         self.window.config(menu = menu)
 
     
@@ -41,7 +43,50 @@ class Window:
 
 
     def __new_game(self):
-        print('xd')
+        self.color = ''
+
+        def create():
+            if len(text.get(1.0, END)[:10]) < 3 or self.color == '': return
+            Config().new_game(text.get(1.0, END)[:-1], 'w')
+            trash_win.destroy()
+            self.board = Board(self)
+            self.board._board(save_file=True)
+
+        def write(_):
+            if len(text.get(1.0, END)) > 10:
+                chars = text.get(1.0, END)[:10]
+                text.delete(1.0, END)
+                text.insert(1.0, chars)
+
+        def color(c):
+            self.color = c.widget['bg'][0]
+            c.widget['bg'][0]
+
+        trash_win = Toplevel(self.window, padx=5, pady=5)
+        trash_win.winfo_toplevel().title("Crear Partida")
+        trash_win.resizable(0,0)
+
+        title = Label(trash_win, padx=0, pady=5, height=1, font=self.font, text='Nombre de la partida:', justify=LEFT)
+        title.grid(column=0, row=0, pady=5)
+
+        text = Text(trash_win, font=self.font, height=1, width=25, spacing1=5, spacing3=5, wrap='none')
+        text.bind('<Key>', write)
+        text.grid(column=1, row=0, columnspan=2, padx=5)
+        text.focus_set()
+
+        title = Label(trash_win, padx=0, pady=5, height=1, font=self.font, text='Color:', justify=LEFT)
+        title.grid(column=0, row=1, padx=1)
+
+        white_btn = Button(trash_win, text='Blanco', font=self.font, background='white', foreground='black', activebackground='black', activeforeground='white')
+        white_btn.bind('<ButtonPress-1>', color)
+        white_btn.grid(column=1, row=1, padx=5)
+
+        black_btn = Button(trash_win, text='Negro', font=self.font, background='black', foreground='white', activebackground='white', activeforeground='black')
+        black_btn.bind('<ButtonPress-1>', color)
+        black_btn.grid(column=2, row=1, padx=5)
+
+        save_btn = Button(trash_win, text='Crear', font=self.font, command=create)
+        save_btn.grid(column=2, row=2, pady=5)
 
 
     def __load_game(self):
@@ -52,6 +97,8 @@ class Window:
             if _iter % 3 == 0:
                 Config().load_game(listbox.get(_iter))
                 trash_win.destroy()
+                self.board = Board(self)
+                self.board._board(True)
 
         def delete(_):
             _item = listbox.curselection()[0]
@@ -102,11 +149,14 @@ class Window:
 
 
     def __save_game(self):
-        def save():
-            Config().save_game(text.get(1.0, END)[:10])
-            trash_win.destroy()
+        if Config().issaved: return
 
-        def write(event):
+        def save():
+            if len(text.get(1.0, END)) > 3:
+                Config().save_game(text.get(1.0, END)[:10])
+                trash_win.destroy()
+
+        def write(_):
             if len(text.get(1.0, END)) > 10:
                 chars = text.get(1.0, END)[:10]
                 text.delete(1.0, END)
@@ -133,4 +183,7 @@ class Window:
 
 
     def start(self):
+        self.board = Board(self)
+        self.board._board(Config().issaved)
         self.window.mainloop()
+

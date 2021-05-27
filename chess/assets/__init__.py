@@ -1,1 +1,1 @@
-__all__ = ['board', 'launcher', 'main']
+import chess.assets.launcher

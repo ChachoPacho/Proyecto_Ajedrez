@@ -3,16 +3,15 @@ from tkinter import *
 from chess.clases.game import Game
 from chess.clases.movements import Movements
 from chess.tools.images import Data, Images, Images_Data
-game = Game()
-game.start('w')
-
-images_data = Images_Data()
+from chess.assets.animation import FireWork
+from chess.constants import VICTORY_SOUND
 
 
 class Board:
     board_border_width = 10
 
     def __init__(self, Window):
+        self.window = Window
         #   Game Zone:  Decorated Board + Chat
         game_zone = ttk.Frame(Window.main_frame)
         game_zone.grid(row=1, sticky=NSEW)
@@ -29,12 +28,6 @@ class Board:
         self.cell_attack = []
         self.current_piece = None
 
-        #   Board chat: what happens in the board will be here
-        self.board_chat = Text(game_zone, borderwidth=0, state='disabled', font=Window.font)
-        self.board_chat['width'] = Window.main_frame['width'] - board_size
-        self.board_chat['height'] = board_size
-        self.board_chat.grid(row=1, column=1, sticky=NE)
-
         #   Decorated Board: board + border
         decorated_board = ttk.Frame(game_zone, borderwidth=self.board_border_width, relief='sunken')
         decorated_board['width'] = decorated_board['height'] = board_size
@@ -47,29 +40,31 @@ class Board:
         self.board.bind('<ButtonPress-1>', self._get_button)
         # canvas.bind('<Configure>', self._cell_resize)
 
+        self.game = Game()
+        self.images_data = Images_Data()
+
+        try: 
+            self.game.board_data
+
+        except: self.game.start('None')
+
         self._set_color('standard2')
-        
+
 
     def _set_color(self, style):
         self.board_color = Data().board['color'][style]
-        if game.board_data.color == 'b':
+        if self.game.board_data.color == 'b':
             self.board_color.reverse()
-
-
-    def __board_chat_writer(self, msg):
-        self.board_chat['state'] = 'normal'
-        self.board_chat.insert('end', msg)
-        self.board_chat['state'] = 'disabled'
 
 
     def __select_piece(self, x, y):
         self.board.delete('cell_move')
-        if [y, x] not in self.cell_move and game.board_data.board[y][x][0] != game.turn[0]:
+        if [y, x] not in self.cell_move and self.game.board_data.board[y][x][0] != self.game.turn[0]:
             return
 
         cell = self.cell_size / 2
         widget = f"Y{y}X{x}"
-        movements = Movements([y, x], game.board_data)
+        movements = Movements([y, x], self.game.board_data)
 
         if [y, x] not in self.cell_move:
             self.current_piece = widget
@@ -78,7 +73,7 @@ class Board:
                     top, right, bottom, left = self._positions(piece[0], piece[1])
 
                     try:
-                        images_data.select(f"Y{piece[0]}X{piece[1]}")
+                        self.images_data.select(f"Y{piece[0]}X{piece[1]}")
                         self.board.create_image(right - cell, bottom - cell, image=self.specials['attack'], anchor=CENTER, tag='cell_move')
                         self.cell_attack.append(piece)
 
@@ -93,42 +88,44 @@ class Board:
         else:
             r = int(self.current_piece[1])
             c = int(self.current_piece[3])
-            I = { 'r': r, 'c': c }
-            F = { 'r': y, 'c': x }
-            if game.update(I, F):
+            if self.game.update({ 'r': r, 'c': c }, { 'r': y, 'c': x }):
                 if [y, x] in self.cell_attack:
-                    self.board.delete(images_data.select(widget))
-                    images_data.delete(widget)
+                    self.board.delete(self.images_data.select(widget))
+                    self.images_data.delete(widget)
                     
-                self.board.moveto(images_data.select(self.current_piece), (self.cell_size) * x, (self.cell_size) * y)
-                images_data.update(f"Y{r}X{c}", widget)
+                self.board.moveto(self.images_data.select(self.current_piece), (self.cell_size) * x, (self.cell_size) * y)
+                self.images_data.update(f"Y{r}X{c}", widget)
                 
             self.cell_move.clear()
             self.cell_attack.clear()
 
+        if self.game.checkmate: 
+            VICTORY_SOUND.play()
+            FireWork(self.window.window, self.board, int(VICTORY_SOUND.get_length() / 5))
+            
 
-    def _board(self):
-        images_data.reset()
+    def _board(self, save_file = False):
+        if not save_file: self.game.start('None')
+
+        self.images_data.reset()
         for rows in range(8):
             for columns in range(8):
                 #   Positions
                 top, right, bottom, left = self._positions(rows, columns)
                 
                 #   Colors
-                if (columns + rows) % 2 == 0:
-                    color = self.board_color[0]
+                if (columns + rows) % 2 == 0: color = self.board_color[0]
 
-                else:
-                    color = self.board_color[1]
+                else: color = self.board_color[1]
 
                 #   Elements
                 cell = self.cell_size / 2
 
                 self.board.create_rectangle(left, top, right, bottom, fill=color, tag='board')
-                if game.board_data.board[rows][columns] != '0': 
+                if self.game.board_data.board[rows][columns] != '0': 
                     pos = f'Y{rows}X{columns}'
-                    self.board.create_image(right - cell, bottom - cell, image=self.pieces[game.board_data.board[rows][columns]], anchor=CENTER, tag=[pos, 'piece'])
-                    images_data.append(pos)
+                    self.board.create_image(right - cell, bottom - cell, image=self.pieces[self.game.board_data.board[rows][columns]], anchor=CENTER, tag=[pos, 'piece'])
+                    self.images_data.append(pos)
         
         self.board.lift('piece')
 
@@ -141,36 +138,9 @@ class Board:
         return [top, right, bottom, left]
 
 
-    """
-        #   Instruction block
-        def _full_board_frame_resize(self, event):
-            if event.height > event.width:
-                size = event.width
-
-            else:
-                size = event.height
-
-            self.board['width'] = self.board['height'] = size
-            self.board_chat['height'] = size
-            self.board_chat['height'] = event.width - size
-            self.cell_size = (size - 2 * self.board_border_width) / 8
-            img_resizer(self.cell_size)
-    """
-
     #   All the buttons functions
     def _get_button(self, event):
         x = int(event.x / self.cell_size)
         y = int(event.y / self.cell_size)
 
-        self.__board_chat_writer(str(x + 1) + ' ' + str(y + 1) + '\n')
-
         self.__select_piece(x, y)
-
-
-    # def _cell_resize(self, event):
-    #     widget = event.widget
-    #     widget['width'] = widget['height'] = self.cell_size
-    #     pos = int(self.cell_size / 2)
-    #     widget.create_image(pos, pos, image=ListIMGResized['bb'], anchor=CENTER)
-
-    #   Instruction block end

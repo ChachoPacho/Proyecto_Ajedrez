@@ -1,8 +1,7 @@
 from tkinter import *
-import tkinter
-from PIL import Image, ImageTk
 from chess.tools.images import Images
 from chess.constants import BIN, LICENSE, README
+
 
 #   Creates the window where the interface will be
 class Launcher:
@@ -151,12 +150,15 @@ class Launcher:
         self.quit = Button(self.mainFrame, font=self.subtitle_font, cursor='hand2', highlightthickness=0, anchor=CENTER)
         self.quit['text'] = 'Salir'
         self.quit.place(x=w*0.9, y=h*0.9, anchor=CENTER)
-        self.quit.bind('<ButtonPress>', self._quit)      
+        self.quit.bind('<ButtonPress>', self._quit)
 
 
     def __open_board(self, _):
         self.launcher.destroy()
-        import chess.assets.test
-        #self.main_frame()
 
-        
+        from chess.assets.window import Window
+        Window('PyChessBoard').start()
+
+Launcher()
+
+

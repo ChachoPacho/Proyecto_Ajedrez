@@ -1,4 +1,6 @@
 import os
+import pygame
+pygame.mixer.init()
 
 CWD = os.path.dirname(__file__)
 BIN = CWD + '/bin/'
@@ -11,3 +13,6 @@ FULL_PATH = os.path.dirname(CWD)
 
 with open(FULL_PATH + '/LICENSE', 'r') as L: LICENSE = L.read()
 with open(FULL_PATH + '/README.md', 'r') as R: README = R.read()
+
+VICTORY_SOUND = pygame.mixer.Sound(SRC + 'resources/music/victoria.ogg')
+

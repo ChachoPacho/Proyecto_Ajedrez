@@ -174,8 +174,8 @@ def Check(test, pieces, mode = 'normal'):
 def Checkmate(test, checks, turn):
     if turn == 'b': color = 'w'
     else: color = 'b'
-    king = test.kings[color]
 
+    king = test.kings[color]
     for check in checks[color]:
         if check != []:
             checkmate = Check(test, [check])[turn]
@@ -193,6 +193,7 @@ def Checkmate(test, checks, turn):
                                 F = { 'r': move[0], 'c': move[1] }
                                 test.update(I, F)
                                 if Check(test, [move])[color] == [[]]: return False
+
                                 test.update(F, I)
 
                 return color

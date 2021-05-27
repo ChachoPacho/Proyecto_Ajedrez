@@ -1,5 +1,6 @@
 from sys import path
 from chess.constants import SAVES, BIN, os
+from chess.clases.game import Game
 import pickle
 import time
 
@@ -16,11 +17,23 @@ class Config():
         name = name.replace('/', '-')
 
         for data_dir in self.dirs:
-            with open(BIN + data_dir, 'rb') as rfile: self.data.update({data_dir: pickle.load(rfile)})
+            try: 
+                with open(BIN + data_dir, 'rb') as rfile: self.data.update({data_dir: pickle.load(rfile)})
+            
+            except: ''
 
-        with open(SAVES + name, 'wb') as wfile:
-            pickle.dump(self, wfile)
-    
+        with open(SAVES + name, 'wb') as wfile: pickle.dump(self, wfile)
+
+
+    @property
+    def issaved(self) -> bool:
+        b = os.path.isfile(BIN + 'save')
+        if b:
+            with open(BIN + 'save', 'rb') as rfile: name = pickle.load(rfile)
+            self.save_game(name)
+
+        return b
+
 
     @property
     def list_games(self):
@@ -28,12 +41,25 @@ class Config():
             yield [save.name, time.ctime(save.stat().st_mtime)]
 
 
+    def remove_save(self):
+        if os.path.isfile(BIN + 'save'): os.remove(BIN + 'save')
+
+
     def load_game(self, name):
+        self.remove_save()
         with open(SAVES + name, 'rb') as rfile: data = pickle.load(rfile)
-        for name in data.__dict__: self.__setattr__(name, data.__dict__[name])
+        for dataName in data.__dict__: self.__setattr__(dataName, data.__dict__[dataName])
 
         for data_dir in self.dirs:
             with open(BIN + data_dir, 'wb') as wfile: pickle.dump(self.data[data_dir], wfile)
+
+        with open(BIN + 'save', 'wb') as wfile: pickle.dump(name, wfile)
+
+
+    def new_game(self, name, color):
+        self.remove_save()
+        Game().start(color)
+        with open(BIN + 'save', 'wb') as wfile: pickle.dump(name, wfile)
 
     
     def delete_game(self, name):
